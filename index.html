@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>C'est mieux sans "euh" — Générateur de cartes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFFBF2;
+    --ink:#14213D;
+    --noun:#2A6F97;
+    --noun-bg:#DCEAF7;
+    --adj:#C1121F;
+    --adj-bg:#FADCDC;
+    --gold:#FFB703;
+    --gold-dark:#E09900;
+    --line:#14213D;
+    --shadow: rgba(20,33,61,0.18);
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    height:100%;
+    margin:0;
+  }
+
+  body{
+    font-family:'Inter', sans-serif;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(42,111,151,0.08) 0, transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(193,18,31,0.08) 0, transparent 45%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    overflow-x:hidden;
+  }
+
+  .wrap{
+    width:100%;
+    max-width:560px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+  }
+
+  header{
+    text-align:center;
+  }
+
+  h1{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:clamp(1.6rem, 5vw, 2.3rem);
+    margin:0 0 4px 0;
+    letter-spacing:-0.5px;
+  }
+
+  h1 .euh{
+    display:inline-block;
+    color:var(--adj);
+    text-decoration:line-through;
+    text-decoration-thickness:4px;
+    text-decoration-color:var(--gold);
+    transform:rotate(-2deg);
+  }
+
+  header p{
+    margin:0;
+    font-size:0.9rem;
+    color:#5b6478;
+  }
+
+  /* ---- Ticket / carte ---- */
+  .stage{
+    position:relative;
+    width:100%;
+    perspective:1400px;
+  }
+
+  .card{
+    position:relative;
+    width:100%;
+    background:var(--paper);
+    border:3px solid var(--ink);
+    border-radius:22px;
+    box-shadow: 0 10px 0 var(--shadow), 0 18px 30px var(--shadow);
+    padding:38px 28px 30px;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    transform-origin:center;
+    animation: pop-in 0.32s cubic-bezier(.2,1.4,.4,1);
+  }
+
+  @keyframes pop-in{
+    from{ transform:scale(0.94) translateY(8px); opacity:0; }
+    to{ transform:scale(1) translateY(0); opacity:1; }
+  }
+
+  .notch{
+    position:absolute;
+    top:50%;
+    width:26px;
+    height:26px;
+    background:var(--bg, #F2EEE2);
+    background:radial-gradient(circle at center, transparent 0 100%);
+  }
+
+  .word-slot{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    padding:14px 6px;
+  }
+
+  .tag{
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:0.7rem;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    padding:3px 12px;
+    border-radius:999px;
+  }
+
+  .tag.noun{ color:var(--noun); background:var(--noun-bg); }
+  .tag.adj{ color:var(--adj); background:var(--adj-bg); }
+
+  .word{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:clamp(1.9rem, 8vw, 2.6rem);
+    line-height:1.1;
+    text-align:center;
+    word-break:break-word;
+  }
+
+  .word.noun{ color:var(--noun); }
+  .word.adj{ color:var(--adj); }
+
+  .divider{
+    position:relative;
+    border:none;
+    border-top:2.5px dashed var(--ink);
+    opacity:0.35;
+    margin:2px 0;
+  }
+  .divider::before, .divider::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:18px;
+    height:18px;
+    background:var(--paper);
+    border:3px solid var(--ink);
+    border-radius:50%;
+    transform:translateY(-50%);
+  }
+  .divider::before{ left:-46px; }
+  .divider::after{ right:-46px; }
+
+  /* ---- Bouton cloche ---- */
+  .bell-btn{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    width:100%;
+    margin-top:6px;
+    padding:18px 20px;
+    border-radius:16px;
+    background:var(--gold);
+    color:var(--ink);
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:1.15rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    box-shadow: 0 6px 0 var(--gold-dark);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+  .bell-btn:hover{ filter:brightness(1.03); }
+  .bell-btn:active{
+    transform:translateY(6px);
+    box-shadow:0 0 0 var(--gold-dark);
+  }
+  .bell-btn:focus-visible{
+    outline:3px solid var(--noun);
+    outline-offset:3px;
+  }
+  .bell-btn svg{ width:22px; height:22px; flex:none; }
+
+  .bell-btn.ring svg{ animation: ding 0.4s ease; }
+  @keyframes ding{
+    0%{ transform:rotate(0deg); }
+    20%{ transform:rotate(-18deg); }
+    45%{ transform:rotate(14deg); }
+    70%{ transform:rotate(-8deg); }
+    100%{ transform:rotate(0deg); }
+  }
+
+  /* ---- Footer / stats ---- */
+  .meta{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    font-size:0.85rem;
+    color:#5b6478;
+  }
+
+  .count{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .count strong{ color:var(--ink); }
+
+  .reset{
+    background:none;
+    border:none;
+    color:#5b6478;
+    font-family:'Inter', sans-serif;
+    font-size:0.85rem;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:4px;
+  }
+  .reset:focus-visible{ outline:2px solid var(--noun); border-radius:4px; }
+
+  .status{
+    margin:0;
+    font-size:0.85rem;
+    text-align:center;
+    color:var(--adj);
+    font-weight:600;
+  }
+
+  .bell-btn:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+  }
+  .bell-btn:disabled:active{
+    transform:none;
+    box-shadow: 0 6px 0 var(--gold-dark);
+  }
+
+  .toast{
+    position:fixed;
+    bottom:26px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:0.9rem;
+    padding:12px 20px;
+    border-radius:999px;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card{ animation:none; }
+    .bell-btn.ring svg{ animation:none; }
+    .toast{ transition:none; }
+  }
+
+  @media (max-width:420px){
+    .divider::before{ left:-30px; width:14px; height:14px; }
+    .divider::after{ right:-30px; width:14px; height:14px; }
+    .card{ padding:30px 18px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>C'est mieux sans <span class="euh">euh</span></h1>
+    <p>Décris les deux mots à ton équipe sans hésiter !</p>
+  </header>
+
+  <div class="stage">
+    <div class="card" id="card">
+      <div class="word-slot">
+        <span class="tag noun">Nom commun</span>
+        <span class="word noun" id="noun-word">…</span>
+      </div>
+      <hr class="divider">
+      <div class="word-slot">
+        <span class="tag adj">Adjectif</span>
+        <span class="word adj" id="adj-word">…</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="status" id="status" hidden></p>
+
+  <button class="bell-btn" id="next-btn" disabled>
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C11.4 2 11 2.4 11 3V3.3C8.2 3.8 6 6.3 6 9.3V13L4.3 15.9C4 16.5 4.4 17.2 5.1 17.2H18.9C19.6 17.2 20 16.5 19.7 15.9L18 13V9.3C18 6.3 15.8 3.8 13 3.3V3C13 2.4 12.6 2 12 2Z" fill="currentColor"/>
+      <path d="M9.5 19C9.8 20.1 10.8 21 12 21C13.2 21 14.2 20.1 14.5 19H9.5Z" fill="currentColor"/>
+    </svg>
+    <span id="btn-label">Trouvé, carte suivante</span>
+  </button>
+
+  <div class="meta">
+    <div class="count">Carte <strong id="current-index">1</strong> / <span id="total-count">100</span></div>
+    <button class="reset" id="reset-btn">Recommencer</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">Nouvelle manche : les cartes sont remélangées !</div>
+
+<script>
+  const NOUNS_URL = 'noms.txt';
+  const ADJ_URL = 'adjectifs.txt';
+
+  const cardEl = document.getElementById('card');
+  const nounEl = document.getElementById('noun-word');
+  const adjEl = document.getElementById('adj-word');
+  const nextBtn = document.getElementById('next-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const indexEl = document.getElementById('current-index');
+  const totalEl = document.getElementById('total-count');
+  const toast = document.getElementById('toast');
+  const statusEl = document.getElementById('status');
+
+  let noms = [];
+  let adjectifs = [];
+  let TOTAL = 0;
+  let nounOrder = [];
+  let adjOrder = [];
+  let pos = 0;
+
+  async function loadWordList(url){
+    const res = await fetch(url, { cache: 'no-store' });
+    if(!res.ok){
+      throw new Error(`Impossible de charger ${url} (${res.status})`);
+    }
+    const text = await res.text();
+    return text
+      .split(/\r?\n/)
+      .map(w => w.trim())
+      .filter(w => w.length > 0);
+  }
+
+  async function init(){
+    try{
+      const [nomsList, adjList] = await Promise.all([
+        loadWordList(NOUNS_URL),
+        loadWordList(ADJ_URL)
+      ]);
+
+      if(nomsList.length === 0 || adjList.length === 0){
+        throw new Error('Une des listes est vide.');
+      }
+
+      noms = nomsList;
+      adjectifs = adjList;
+      TOTAL = Math.min(noms.length, adjectifs.length);
+      totalEl.textContent = TOTAL;
+
+      nextBtn.disabled = false;
+      newRound(false);
+      render();
+    }catch(err){
+      statusEl.hidden = false;
+      statusEl.textContent =
+        `Erreur de chargement des listes (${err.message}). ` +
+        `Vérifie que "${NOUNS_URL}" et "${ADJ_URL}" sont bien à côté de index.html, ` +
+        `et que la page est servie via un serveur web (pas ouverte en double-clic).`;
+      nounEl.textContent = '—';
+      adjEl.textContent = '—';
+    }
+  }
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function newRound(showToast){
+    nounOrder = shuffle([...Array(noms.length).keys()]);
+    adjOrder = shuffle([...Array(adjectifs.length).keys()]);
+    pos = 0;
+    if(showToast){
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+  }
+
+  function render(){
+    nounEl.textContent = noms[nounOrder[pos]];
+    adjEl.textContent = adjectifs[adjOrder[pos]];
+    indexEl.textContent = pos + 1;
+
+    cardEl.style.animation = 'none';
+    void cardEl.offsetWidth;
+    cardEl.style.animation = '';
+  }
+
+  function next(){
+    nextBtn.classList.remove('ring');
+    void nextBtn.offsetWidth;
+    nextBtn.classList.add('ring');
+
+    pos++;
+    if(pos >= TOTAL){
+      newRound(true);
+    }
+    render();
+  }
+
+  nextBtn.addEventListener('click', next);
+  resetBtn.addEventListener('click', () => { newRound(false); render(); });
+
+  init();
+</script>
+
+</body>
+</html>
